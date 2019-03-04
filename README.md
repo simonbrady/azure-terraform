@@ -74,8 +74,127 @@ PS /home/simon> cd clouddrive/demo
 PS /home/simon/clouddrive/demo>
 ```
 
+## Template Content
+
+The templates that define the Azure resources we're going to build are text files written in
+[HashiCorp Configuration Language](https://www.terraform.io/docs/configuration/index.html) (HCL). Terraform picks up all
+`*.tf` files in the current directory (and in [modules](https://www.terraform.io/docs/configuration/modules.html)
+although we won't cover those here) and parses them as a lump, so while you can put everything in one big file
+the convention is to break things up. A big part of being productive in Terraform, or any technology for that matter,
+is learning convention - if speak like Yoda I do, still understand me you will, but it's easier for everyone if I follow
+the accepted conventions of English word order.
+
+The template files in this demo are:
+
+* [vars.tf](demo/vars.tf) - defines [input variables](https://www.terraform.io/docs/configuration/variables.html) that
+you can use to parameterise your resource deployment. Variables are absolutely key to harnessing the power of Terraform -
+they let you centralise configuration that can change (similar to defining named constants in a traditional programming
+language rather than sprinkling magic values throughout the code), which makes it easy to reuse existing templates with
+minimal effort.
+* [provider.tf](demo/provider.tf) - configures the
+[Terraform Azure Provider](https://www.terraform.io/docs/providers/azurerm/index.html) which is the glue between generic
+Terraform and Azure. Terraform itself is a generalised resource deployment engine and the provider (there are
+[many](https://www.terraform.io/docs/providers/index.html)) is a plugin for a specific target platform.
+In our case we only configure the Azure one, but a single Terraform project can use as many as needed.
+* [main.tf](demo/main.tf) - defines the individual resources we're deploying. The resources can be of any type
+our configured provider understands, and their properties can reference input variables using HCL's
+[interpolation syntax](https://www.terraform.io/docs/configuration-0-11/interpolation.html) (note that this link is
+specific to Terraform 0.11 and earlier, as used in Cloud Shell, because the syntax will slightly
+[change](https://www.terraform.io/docs/configuration/expressions.html) in 0.12).
+
+## Resource Deployment
+
+### Initialising Terraform
+
+Before using Terraform for a deployment, or any time you change the provider configuration, you first have to initialise
+the provider with `terraform init`:
+
+```
+PS /home/simon/clouddrive/demo> terraform init
+
+Initializing provider plugins...
+- Checking for available provider plugins on https://releases.hashicorp.com...
+- Downloading plugin for provider "azurerm" (1.22.1)...
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+```
+
+The provider binary is downloaded to a hidden `.terraform` directory and will continue to be used until the next time
+`terraform init` is run.
+
+### Creating New Resources
+
+Terraform tracks the [state](https://www.terraform.io/docs/state/index.html) of resources it's deployed so it can
+determine when to apply incremental changes. Initially there isn't any state to record, so when Terraform looks at
+the template it will realise it needs to create all the resources defined there.
+
+Since resources can change without Terraform's knowledge, e.g. by direct updates in the Azure console, it needs a
+way to examine their current state as well as what was last recorded. This is done by running `terraform plan`
+which compares the resources defined in the template (desired state) with what's actually deployed:
+
+```
+PS /home/simon/clouddrive/demo> terraform plan
+Refreshing Terraform state in-memory prior to plan...
+The refreshed state will be used to calculate this plan, but will not be
+persisted to local or remote state storage.
+
+
+------------------------------------------------------------------------
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  + azurerm_resource_group.demo
+      id:                  <computed>
+      location:            "australiaeast"
+      name:                "demo-rg"
+      tags.%:              <computed>
+
+  + azurerm_virtual_network.demo
+      id:                  <computed>
+      address_space.#:     "1"
+      address_space.0:     "10.1.0.0/16"
+      location:            "australiaeast"
+      name:                "demo-vnet"
+      resource_group_name: "demo-rg"
+      subnet.#:            <computed>
+      tags.%:              <computed>
+
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+------------------------------------------------------------------------
+
+Note: You didn't specify an "-out" parameter to save this plan, so Terraform
+can't guarantee that exactly these actions will be performed if
+"terraform apply" is subsequently run.
+```
+
+A key tenet of infastructure as code is that _all_ changes should be made in code,and not through direct
+modification of resources. However, since it's difficult to guarantee this, you should run `terraform plan`
+frequently to test the impact of any changes you're making in the code. This also does a basic syntax check
+of the template source, although it won't catch all possible errors.
+
+To actually apply the changes, run `terraform apply`. This will do an additional check against actual resource
+state, similar to `terraform plan`, so it's vital that you check the output prior to confirming the change can
+proceed:
+
+### Modifying an Existing Resource
+
+### Destroying Resources
+
 ## Further Reading
 
 * [Introduction to Terraform](https://www.terraform.io/intro/index.html)
-* [Terraform Azure Provider](https://www.terraform.io/docs/providers/azurerm/index.html)
 * [Terraform Cloud Shell development](https://docs.microsoft.com/en-us/azure/terraform/terraform-cloud-shell)
