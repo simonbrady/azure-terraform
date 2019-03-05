@@ -21,7 +21,7 @@ bash experience. This demo is written for PowerShell but you can choose either o
 almost identical.
 
 After choosing your shell you'll be prompted to create an
-[Azure storage account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview) for Cloud Shell
+[Azure storage account](https://docs.microsoft.com/en-us/azure/cloud-shell/persisting-shell-storage) for Cloud Shell
 to store files in. Unlike the resources you'll create in this example, the storage account **will incur charges**
 so you'll want to delete it when you're finished (that said, the charges will be minimal).
 
@@ -57,7 +57,7 @@ Terraform v0.11.11
 
 ## Uploading Templates
 
-Upload the three `.tf` files in the `demo` subdirectory by clicking the upload button in the Cloud Shell console:
+Upload the three `.tf` files in the [demo](demo) subdirectory by clicking the upload button in the Cloud Shell console:
 
 ![Upload files button](https://github.com/simonbrady/azure-terraform/raw/master/img/upload_files.png "Upload files button")
 
