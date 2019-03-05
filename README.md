@@ -132,6 +132,14 @@ The provider binary is downloaded to a hidden `.terraform` directory and will co
 
 ### Creating New Resources
 
+In [main.tf](demo/main.tf) we define two resources: a
+[resource group](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-overview) called `demo-rg`
+that acts as a container for other resources, and a
+[virtual network](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview) called `demo-vnet`
+that lives inside the resource group. Before creating these, go to the All Resources view in the Azure console to
+confirm you don't already have any resources that clash with these names (if you're starting from scratch, the only
+resource you should see is the storage account that Cloud Shell created on your behalf).
+
 Terraform tracks the [state](https://www.terraform.io/docs/state/index.html) of resources it's deployed so it can
 determine when to apply incremental changes. Initially there isn't any state to record, so when Terraform looks at
 the template it will realise it needs to create all the resources defined there.
@@ -181,7 +189,12 @@ can't guarantee that exactly these actions will be performed if
 "terraform apply" is subsequently run.
 ```
 
-A key tenet of infastructure as code is that _all_ changes should be made in code,and not through direct
+This shows that Terraform expects to create two new resources. Resource attributes that are explicitly
+set in the template or can be determined from variables are listed with their values (e.g. the `location`
+attribute for both resources), while attributes whose values can't be determined in advance are listed
+as `<computed>`.
+
+A key tenet of infastructure as code is that _all_ changes should be made in code, and not through direct
 modification of resources. However, since it's difficult to guarantee this, you should run `terraform plan`
 frequently to test the impact of any changes you're making in the code. This also does a basic syntax check
 of the template source, although it won't catch all possible errors.
@@ -190,9 +203,179 @@ To actually apply the changes, run `terraform apply`. This will do an additional
 state, similar to `terraform plan`, so it's vital that you check the output prior to confirming the change can
 proceed:
 
+```
+PS /home/simon/clouddrive/demo> terraform apply
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  + azurerm_resource_group.demo
+      id:                  <computed>
+      location:            "australiaeast"
+      name:                "demo-rg"
+      tags.%:              <computed>
+
+  + azurerm_virtual_network.demo
+      id:                  <computed>
+      address_space.#:     "1"
+      address_space.0:     "10.1.0.0/16"
+      location:            "australiaeast"
+      name:                "demo-vnet"
+      resource_group_name: "demo-rg"
+      subnet.#:            <computed>
+      tags.%:              <computed>
+
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+azurerm_resource_group.demo: Creating...
+  location: "" => "australiaeast"
+  name:     "" => "demo-rg"
+  tags.%:   "" => "<computed>"
+azurerm_resource_group.demo: Creation complete after 2s (ID: /subscriptions/9778f812-31e9-47a9-af63-b5f9df11fd37/resourceGroups/demo-rg)
+azurerm_virtual_network.demo: Creating...
+  address_space.#:     "" => "1"
+  address_space.0:     "" => "10.1.0.0/16"
+  location:            "" => "australiaeast"
+  name:                "" => "demo-vnet"
+  resource_group_name: "" => "demo-rg"
+  subnet.#:            "" => "<computed>"
+  tags.%:              "" => "<computed>"
+azurerm_virtual_network.demo: Still creating... (10s elapsed)
+azurerm_virtual_network.demo: Creation complete after 15s (ID: /subscriptions/9778f812-31e9-47a9-af63-...soft.Network/virtualNetworks/demo-vnet)
+
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+```
+
+If you now refresh the All Resources view in the console, you shoud see `demo-vnet` listed with `demo-rg` as its resource group.
+
 ### Modifying an Existing Resource
 
+When `terraform apply` runs it updates (or creates) the local state record to reflect what actions it carried out. In our case you'll see a
+file `terraform.tfstate` in your local directory, although Terraform can use different [backends](https://www.terraform.io/docs/backends/index.html)
+to share state between developers.
+
+To force an incremental change, click the Open Editor button in Cloud Shell then choose `clouddrive/demo/vars.vf`:
+
+![Open editor button](https://github.com/simonbrady/azure-terraform/raw/master/img/open_editor.png "Open editor button")
+
+Update the `default` value for `cidr_range`, e.g. to "10.2.0.0/16", then save your changes:
+
+![Save file](https://github.com/simonbrady/azure-terraform/raw/master/img/save.png "Save flle")
+
+Run `terraform plan` to confirm that your change will lead to an in-place update of the virtual
+network:
+
+```
+PS /home/simon/clouddrive/demo> terraform plan
+Refreshing Terraform state in-memory prior to plan...
+The refreshed state will be used to calculate this plan, but will not be
+persisted to local or remote state storage.
+
+azurerm_resource_group.demo: Refreshing state... (ID: /subscriptions/9778f812-31e9-47a9-af63-b5f9df11fd37/resourceGroups/demo-rg)
+azurerm_virtual_network.demo: Refreshing state... (ID: /subscriptions/9778f812-31e9-47a9-af63-...soft.Network/virtualNetworks/demo-vnet)
+
+------------------------------------------------------------------------
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  ~ update in-place
+
+Terraform will perform the following actions:
+
+  ~ azurerm_virtual_network.demo
+      address_space.0: "10.1.0.0/16" => "10.2.0.0/16"
+
+
+Plan: 0 to add, 1 to change, 0 to destroy.
+```
+
+Now run `terraform apply` to make the change:
+
+```
+PS /home/simon/clouddrive/demo> terraform apply
+azurerm_resource_group.demo: Refreshing state... (ID: /subscriptions/9778f812-31e9-47a9-af63-b5f9df11fd37/resourceGroups/demo-rg)
+azurerm_virtual_network.demo: Refreshing state... (ID: /subscriptions/9778f812-31e9-47a9-af63-...soft.Network/virtualNetworks/demo-vnet)
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  ~ update in-place
+
+Terraform will perform the following actions:
+
+  ~ azurerm_virtual_network.demo
+      address_space.0: "10.1.0.0/16" => "10.2.0.0/16"
+
+
+Plan: 0 to add, 1 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+azurerm_virtual_network.demo: Modifying... (ID: /subscriptions/9778f812-31e9-47a9-af63-...soft.Network/virtualNetworks/demo-vnet)
+  address_space.0: "10.1.0.0/16" => "10.2.0.0/16"
+azurerm_virtual_network.demo: Modifications complete after 2s (ID: /subscriptions/9778f812-31e9-47a9-af63-...soft.Network/virtualNetworks/demo-vnet)
+
+Apply complete! Resources: 0 added, 1 changed, 0 destroyed.
+```
+
+Back in the Azure console you should see the new address space in the details for the `demo-vnet`
+virtual network.
+
 ### Destroying Resources
+
+To clean up all the resourcs Terraform created, run `terraform destroy`:
+
+```
+PS /home/simon/clouddrive/demo> terraform destroy
+azurerm_resource_group.demo: Refreshing state... (ID: /subscriptions/9778f812-31e9-47a9-af63-b5f9df11fd37/resourceGroups/demo-rg)
+azurerm_virtual_network.demo: Refreshing state... (ID: /subscriptions/9778f812-31e9-47a9-af63-...soft.Network/virtualNetworks/demo-vnet)
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+  - azurerm_resource_group.demo
+
+  - azurerm_virtual_network.demo
+
+
+Plan: 0 to add, 0 to change, 2 to destroy.
+
+Do you really want to destroy all resources?
+  Terraform will destroy all your managed infrastructure, as shown above.
+  There is no undo. Only 'yes' will be accepted to confirm.
+
+  Enter a value: yes
+
+azurerm_virtual_network.demo: Destroying... (ID: /subscriptions/9778f812-31e9-47a9-af63-...soft.Network/virtualNetworks/demo-vnet)
+azurerm_virtual_network.demo: Destruction complete after 1s
+azurerm_resource_group.demo: Destroying... (ID: /subscriptions/9778f812-31e9-47a9-af63-b5f9df11fd37/resourceGroups/demo-rg)
+azurerm_resource_group.demo: Still destroying... (ID: /subscriptions/9778f812-31e9-47a9-af63-b5f9df11fd37/resourceGroups/demo-rg, 10s elapsed)
+azurerm_resource_group.demo: Still destroying... (ID: /subscriptions/9778f812-31e9-47a9-af63-b5f9df11fd37/resourceGroups/demo-rg, 20s elapsed)
+azurerm_resource_group.demo: Still destroying... (ID: /subscriptions/9778f812-31e9-47a9-af63-b5f9df11fd37/resourceGroups/demo-rg, 30s elapsed)
+azurerm_resource_group.demo: Still destroying... (ID: /subscriptions/9778f812-31e9-47a9-af63-b5f9df11fd37/resourceGroups/demo-rg, 40s elapsed)
+azurerm_resource_group.demo: Destruction complete after 50s
+
+Destroy complete! Resources: 2 destroyed.
+```
+
+Note that Terraform only destroys resources it created - if you want to delete the storage account that
+Cloud Shell created, you'll need to do it manually through the Azure console.
 
 ## Further Reading
 
