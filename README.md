@@ -55,7 +55,7 @@ PS Azure:\> terraform version
 Terraform v0.11.11
 ```
 
-## Uploading Templates
+## Copying Templates
 
 Now that you have persistent storage attached to your Cloud Shell you can clone this git repository
 to get a local copy of the Terraform template files:
@@ -334,6 +334,18 @@ Apply complete! Resources: 0 added, 1 changed, 0 destroyed.
 
 Back in the Azure console you should see the new address space in the details for the `demo-vnet`
 virtual network.
+
+### Further Modifications
+
+Our virtual network configuration is the bare minimum necessary to deploy, but the
+[provider documentation](https://www.terraform.io/docs/providers/azurerm/r/virtual_network.html) lists lots of optional
+attributes we could also define. Some suggestions to get you started:
+
+* Add some descriptive [tags](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-using-tags) to the resource.
+* Divide the address space into [subnets](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-vnet-plan-design-arm#segmentation)
+(hint: rather than hard-coding subnet CIDR ranges that would have to change if you updated the address space, define some Terraform
+[local values](https://www.terraform.io/docs/configuration/locals.html) using the
+[cidrsubnet](https://www.terraform.io/docs/configuration/functions/cidrsubnet.html) function).
 
 ### Destroying Resources
 
