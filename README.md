@@ -57,23 +57,22 @@ Terraform v0.11.11
 
 ## Uploading Templates
 
-Copy the contents of this repository to your local machine, either by doing a `git clone` or by downloading the files
-as a ZIP archive (use the "Clone or download" button at the top of this page). You can then upload the three `.tf`
-files in the [demo](demo) subdirectory to Cloud Shell by clicking the upload button in the console:
-
-![Upload files button](https://github.com/simonbrady/azure-terraform/raw/master/img/upload_files.png "Upload files button")
-
-You'll have to upload each one individually, then move them from your Cloud Shell home directory to the persistent storage
-that's backed by your storage account:
+Now that you have persistent storage attached to your Cloud Shell you can clone this git repository
+to get a local copy of the Terraform template files:
 
 ```
-PS Azure:\> cd $HOME
-PS /home/simon> ls
-clouddrive  main.tf  provider.tf  vars.tf
-PS /home/simon> mkdir clouddrive/demo
-PS /home/simon> mv *.tf clouddrive/demo
-PS /home/simon> cd clouddrive/demo
-PS /home/simon/clouddrive/demo>
+PS Azure:\> cd $HOME/clouddrive
+PS /home/simon/clouddrive> git clone https://github.com/simonbrady/azure-terraform.git
+Cloning into 'azure-terraform'...
+remote: Enumerating objects: 35, done.
+remote: Counting objects: 100% (35/35), done.
+remote: Compressing objects: 100% (31/31), done.
+remote: Total 35 (delta 9), reused 26 (delta 4), pack-reused 0
+Unpacking objects: 100% (35/35), done.
+Checking connectivity... done.
+PS /home/simon/clouddrive> cd azure-terraform/demo
+PS /home/simon/clouddrive/azure-terraform/demo> ls
+main.tf  provider.tf  vars.tf
 ```
 
 ## Template Content
