@@ -57,7 +57,9 @@ Terraform v0.11.11
 
 ## Uploading Templates
 
-Upload the three `.tf` files in the [demo](demo) subdirectory by clicking the upload button in the Cloud Shell console:
+Copy the contents of this repository to your local machine, either by doing a `git clone` or by downloading the files
+as a ZIP archive (use the "Clone or download" button at the top of this page). You can then upload the three `.tf`
+files in the [demo](demo) subdirectory to Cloud Shell by clicking the upload button in the console:
 
 ![Upload files button](https://github.com/simonbrady/azure-terraform/raw/master/img/upload_files.png "Upload files button")
 
@@ -336,7 +338,7 @@ virtual network.
 
 ### Destroying Resources
 
-To clean up all the resourcs Terraform created, run `terraform destroy`:
+To clean up all the resources Terraform created, run `terraform destroy`:
 
 ```
 PS /home/simon/clouddrive/demo> terraform destroy
