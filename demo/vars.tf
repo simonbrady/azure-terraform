@@ -5,7 +5,7 @@ variable "location" {
   description = "Azure location to create resources in"
 }
 
-variable "cidr_range" {
+variable "address_space" {
   default = "10.1.0.0/16"
   description = "CIDR range to use as virtual network's address space"
 }

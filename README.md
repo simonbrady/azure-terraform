@@ -269,7 +269,7 @@ To force an incremental change, click the Open Editor button in Cloud Shell then
 
 ![Open editor button](https://github.com/simonbrady/azure-terraform/raw/master/img/open_editor.png "Open editor button")
 
-Update the `default` value for `cidr_range`, e.g. to "10.2.0.0/16", then save your changes:
+Update the `default` value for `address_space`, e.g. to "10.2.0.0/16", then save your changes:
 
 ![Save file](https://github.com/simonbrady/azure-terraform/raw/master/img/save.png "Save flle")
 
