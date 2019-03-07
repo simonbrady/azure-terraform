@@ -55,6 +55,10 @@ PS Azure:\> terraform version
 Terraform v0.11.11
 ```
 
+**Note**: At time of writing Cloud Shell provides Terraform 0.11, but the online Terraform docs
+are being updated for 0.12. Generally speaking everything here will remain relevant for 0.12 when it's
+released, but if in doubt please follow the links they provide back to the 0.11 docs.
+
 ## Copying Templates
 
 Now that you have persistent storage attached to your Cloud Shell you can clone this git repository
