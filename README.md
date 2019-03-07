@@ -87,16 +87,16 @@ the accepted conventions of English word order.
 
 The template files in this demo are:
 
-* [vars.tf](demo/vars.tf) - defines [input variables](https://www.terraform.io/docs/configuration/variables.html) that
-you can use to parameterise your resource deployment. Variables are absolutely key to harnessing the power of Terraform -
-they let you centralise configuration that can change (similar to defining named constants in a traditional programming
-language rather than sprinkling magic values throughout the code), which makes it easy to reuse existing templates with
-minimal effort.
 * [provider.tf](demo/provider.tf) - configures the
 [Terraform Azure Provider](https://www.terraform.io/docs/providers/azurerm/index.html) which is the glue between generic
 Terraform and Azure. Terraform itself is a generalised resource deployment engine and the provider (there are
 [many](https://www.terraform.io/docs/providers/index.html)) is a plugin for a specific target platform.
 In our case we only configure the Azure one, but a single Terraform project can use as many as needed.
+* [vars.tf](demo/vars.tf) - defines [input variables](https://www.terraform.io/docs/configuration/variables.html) that
+you can use to parameterise your resource deployment. Variables are absolutely key to harnessing the power of Terraform -
+they let you centralise configuration that can change (similar to defining named constants in a traditional programming
+language rather than sprinkling magic values throughout the code), which makes it easy to reuse existing templates with
+minimal effort.
 * [main.tf](demo/main.tf) - defines the individual resources we're deploying. The resources can be of any type
 our configured provider understands, and their properties can reference input variables using HCL's
 [interpolation syntax](https://www.terraform.io/docs/configuration-0-11/interpolation.html) (note that this link is
@@ -343,7 +343,7 @@ attributes we could also define. Some suggestions to get you started:
 
 * Add some descriptive [tags](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-using-tags) to the resource.
 * Divide the address space into [subnets](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-vnet-plan-design-arm#segmentation)
-(hint: rather than hard-coding subnet CIDR ranges that would have to change if you updated the address space, define some Terraform
+(hint: rather than hard-coding subnet CIDR ranges that would have to change if you updated the address space, define Terraform
 [local values](https://www.terraform.io/docs/configuration/locals.html) using the
 [cidrsubnet](https://www.terraform.io/docs/configuration/functions/cidrsubnet.html) function).
 
