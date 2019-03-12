@@ -397,4 +397,5 @@ Cloud Shell created, you'll need to do it manually through the Azure console.
 ## Further Reading
 
 * [Introduction to Terraform](https://www.terraform.io/intro/index.html)
+* [Getting started with Terraform using the Azure provider](https://learn.hashicorp.com/terraform/?track=azure#azure)
 * [Terraform Cloud Shell development](https://docs.microsoft.com/en-us/azure/terraform/terraform-cloud-shell)
