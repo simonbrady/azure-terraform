@@ -4,8 +4,8 @@ A minimal [Terraform](https://www.terraform.io/) example for Azure.
 
 ## Prerequisites
 
-All you need for this demo is an Azure account. You can get a free one
-[here](https://azure.microsoft.com/en-us/free/). Everything else is run through
+All you need for this demo is an Azure account (you can get a free one
+[here](https://azure.microsoft.com/en-us/free/)). Everything else is run through
 [Azure Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/overview)
 in a browser.
 
@@ -269,7 +269,7 @@ When `terraform apply` runs it updates (or creates) the local state record to re
 file `terraform.tfstate` in your local directory, although Terraform can use different [backends](https://www.terraform.io/docs/backends/index.html)
 to share state between developers.
 
-To force an incremental change, click the Open Editor button in Cloud Shell then choose `clouddrive/demo/vars.vf`:
+To force an incremental change, click the Open Editor button in Cloud Shell then choose `clouddrive/demo/vars.tf`:
 
 ![Open editor button](https://github.com/simonbrady/azure-terraform/raw/master/img/open_editor.png "Open editor button")
 
