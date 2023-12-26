@@ -14,7 +14,7 @@ in a browser.
 Log in to the [Azure portal](https://portal.azure.com) and click the Cloud Shell
 icon:
 
-![Start Cloud Shell](https://github.com/simonbrady/azure-terraform/raw/master/img/start_shell.png "Start Cloud Shell")
+![Start Cloud Shell](https://github.com/simonbrady/azure-terraform/blob/main/img/start_shell.png "Start Cloud Shell")
 
 If this is the first time you've launched Cloud Shell you'll be prompted to choose either the PowerShell or
 bash experience. This demo is written for PowerShell but you can choose either one, since the commands will be
@@ -29,31 +29,24 @@ When your shell has launched you can run `terraform version` to confirm that the
 is working as expected:
 
 ```
-Your cloud drive has been created in:
-
-Subscription Id: [...]
-Resource group:  [...]
-Storage account: [...]
-File share:      [...]
-
-Initializing your account for Cloud Shell...-
 Requesting a Cloud Shell.Succeeded.
 Connecting terminal...
 
 Welcome to Azure Cloud Shell
 
-Type "az" to use Azure CLI 2.0
+Type "az" to use Azure CLI
 Type "help" to learn about Cloud Shell
 
 
-MOTD: Manage Azure Active Directory: Get-Command -Module AzureAD*
-
 VERBOSE: Authenticating to Azure ...
 VERBOSE: Building your Azure drive ...
-Azure:/
-PS Azure:\> terraform version
-Terraform v0.12.0
+PS /home/simon> terraform version
+Terraform v1.3.2
+on linux_amd64
 ```
+
+This demo will work with any Terraform 1.x version, so don't worry if you get a warning that the pre-installed
+version is out of date.
 
 ## Copying Templates
 
@@ -61,25 +54,25 @@ Now that you have persistent storage attached to your Cloud Shell you can clone 
 to get a local copy of the Terraform template files:
 
 ```
-PS Azure:\> cd $HOME/clouddrive
+PS /home/simon> cd $HOME/clouddrive
 PS /home/simon/clouddrive> git clone https://github.com/simonbrady/azure-terraform.git
 Cloning into 'azure-terraform'...
-remote: Enumerating objects: 71, done.
-remote: Counting objects: 100% (71/71), done.
-remote: Compressing objects: 100% (52/52), done.
-remote: Total 71 (delta 31), reused 54 (delta 18), pack-reused 0
-Unpacking objects: 100% (71/71), done.
-Checking connectivity... done.
+remote: Enumerating objects: 79, done.
+remote: Counting objects: 100% (5/5), done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 79 (delta 0), reused 5 (delta 0), pack-reused 74
+Receiving objects: 100% (79/79), 48.83 KiB | 233.00 KiB/s, done.
+Resolving deltas: 100% (32/32), done.
 PS /home/simon/clouddrive> cd azure-terraform/demo
 PS /home/simon/clouddrive/azure-terraform/demo> ls
-main.tf  provider.tf  vars.tf  versions.tf
+main.tf  provider.tf  vars.tf
 ```
 
 ## Template Content
 
 The templates that define the Azure resources we're going to build are text files written in
-[HashiCorp Configuration Language](https://www.terraform.io/docs/configuration/index.html) (HCL). Terraform picks up all
-`*.tf` files in the current directory (and in [modules](https://www.terraform.io/docs/configuration/modules.html)
+[HashiCorp Configuration Language](https://developer.hashicorp.com/terraform/language) (HCL). Terraform picks up all
+`*.tf` files in the current directory (and in [modules](https://developer.hashicorp.com/terraform/language/modules)
 although we won't cover those here) and parses them as a lump, so while you can put everything in one big file
 the convention is to break things up. A big part of being productive in Terraform, or any technology for that matter,
 is learning convention - if speak like Yoda I do, still understand me you will, but it's easier for everyone if I follow
@@ -89,18 +82,17 @@ The template files in this demo are:
 
 * [main.tf](demo/main.tf) - defines the individual resources we're deploying. The resources can be of any type
 our configured provider understands, and their properties can reference input variables using HCL's
-[expression syntax](https://www.terraform.io/docs/configuration/expressions.html).
-* [provider.tf](demo/provider.tf) - configures the
-[Terraform Azure Provider](https://www.terraform.io/docs/providers/azurerm/index.html) which is the glue between generic
+[expression syntax](https://developer.hashicorp.com/terraform/language/expressions).
+* [provider.tf](demo/provider.tf) - specifies the minimum version of Terraform required to deploy this project and configures the
+[Terraform Azure Provider](https://registry.terraform.io/providers/hashicorp/azurerm/latest) which is the glue between generic
 Terraform and Azure. Terraform itself is a generalised resource deployment engine and the provider (there are
-[many](https://www.terraform.io/docs/providers/index.html)) is a plugin for a specific target platform.
+[many](https://developer.hashicorp.com/terraform/language/providers)) is a plugin for a specific target platform.
 In our case we only configure the Azure one, but a single Terraform project can use as many as needed.
-* [vars.tf](demo/vars.tf) - defines [input variables](https://www.terraform.io/docs/configuration/variables.html) that
+* [vars.tf](demo/vars.tf) - defines [input variables](https://developer.hashicorp.com/terraform/language/values/variables) that
 you can use to parameterise your resource deployment. Variables are absolutely key to harnessing the power of Terraform -
 they let you centralise configuration that can change (similar to defining named constants in a traditional programming
 language rather than sprinkling magic values throughout the code), which makes it easy to reuse existing templates with
 minimal effort.
-* [versions.tf](demo/versions.tf) - specifies the minimum version of Terraform required to deploy this project.
 
 ## Resource Deployment
 
@@ -111,12 +103,17 @@ the provider with `terraform init`:
 
 ```
 PS /home/simon/clouddrive/azure-terraform/demo> terraform init
-
 Initializing the backend...
 
 Initializing provider plugins...
-- Checking for available provider plugins...
-- Downloading plugin for provider "azurerm" (terraform-providers/azurerm) 1.29.0...
+- Finding hashicorp/azurerm versions matching "~> 3.0"...
+- Installing hashicorp/azurerm v3.85.0...
+- Installed hashicorp/azurerm v3.85.0 (signed by HashiCorp)
+
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
 
 Terraform has been successfully initialized!
 
@@ -135,14 +132,14 @@ The provider binary is downloaded to a hidden `.terraform` directory and will co
 ### Creating New Resources
 
 In [main.tf](demo/main.tf) we define two resources: a
-[resource group](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-overview) called `demo-rg`
-that acts as a container for other resources, and a
+[resource group](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal)
+called `demo-rg` that acts as a container for other resources, and a
 [virtual network](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview) called `demo-vnet`
 that lives inside the resource group. Before creating these, go to the All Resources view in the Azure console to
 confirm you don't already have any resources that clash with these names (if you're starting from scratch, the only
 resource you should see is the storage account that Cloud Shell created on your behalf).
 
-Terraform tracks the [state](https://www.terraform.io/docs/state/index.html) of resources it's deployed so it can
+Terraform tracks the [state](https://developer.hashicorp.com/terraform/language/state) of resources it's deployed so it can
 determine when to apply incremental changes. Initially there isn't any state to record, so when Terraform looks at
 the template it will realise it needs to create all the resources defined there.
 
@@ -152,15 +149,7 @@ which compares the resources defined in the template (desired state) with what's
 
 ```
 PS /home/simon/clouddrive/azure-terraform/demo> terraform plan
-Refreshing Terraform state in-memory prior to plan...
-The refreshed state will be used to calculate this plan, but will not be
-persisted to local or remote state storage.
-
-
-------------------------------------------------------------------------
-
-An execution plan has been generated and is shown below.
-Resource actions are indicated with the following symbols:
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
   + create
 
 Terraform will perform the following actions:
@@ -170,7 +159,6 @@ Terraform will perform the following actions:
       + id       = (known after apply)
       + location = "australiaeast"
       + name     = "demo-rg"
-      + tags     = (known after apply)
     }
 
   # azurerm_virtual_network.demo will be created
@@ -178,27 +166,21 @@ Terraform will perform the following actions:
       + address_space       = [
           + "10.1.0.0/16",
         ]
+      + dns_servers         = (known after apply)
+      + guid                = (known after apply)
       + id                  = (known after apply)
       + location            = "australiaeast"
       + name                = "demo-vnet"
       + resource_group_name = "demo-rg"
-      + tags                = (known after apply)
-
-      + subnet {
-          + address_prefix = (known after apply)
-          + id             = (known after apply)
-          + name           = (known after apply)
-          + security_group = (known after apply)
-        }
+      + subnet              = (known after apply)
     }
 
 Plan: 2 to add, 0 to change, 0 to destroy.
 
-------------------------------------------------------------------------
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-Note: You didn't specify an "-out" parameter to save this plan, so Terraform
-can't guarantee that exactly these actions will be performed if
-"terraform apply" is subsequently run.
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform
+apply" now.
 ```
 
 This shows that Terraform expects to create two new resources. Resource attributes that are explicitly
@@ -218,8 +200,7 @@ proceed:
 ```
 PS /home/simon/clouddrive/azure-terraform/demo> terraform apply
 
-An execution plan has been generated and is shown below.
-Resource actions are indicated with the following symbols:
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
   + create
 
 Terraform will perform the following actions:
@@ -229,7 +210,6 @@ Terraform will perform the following actions:
       + id       = (known after apply)
       + location = "australiaeast"
       + name     = "demo-rg"
-      + tags     = (known after apply)
     }
 
   # azurerm_virtual_network.demo will be created
@@ -237,18 +217,13 @@ Terraform will perform the following actions:
       + address_space       = [
           + "10.1.0.0/16",
         ]
+      + dns_servers         = (known after apply)
+      + guid                = (known after apply)
       + id                  = (known after apply)
       + location            = "australiaeast"
       + name                = "demo-vnet"
       + resource_group_name = "demo-rg"
-      + tags                = (known after apply)
-
-      + subnet {
-          + address_prefix = (known after apply)
-          + id             = (known after apply)
-          + name           = (known after apply)
-          + security_group = (known after apply)
-        }
+      + subnet              = (known after apply)
     }
 
 Plan: 2 to add, 0 to change, 0 to destroy.
@@ -260,10 +235,9 @@ Do you want to perform these actions?
   Enter a value: yes
 
 azurerm_resource_group.demo: Creating...
-azurerm_resource_group.demo: Creation complete after 1s [id=/subscriptions/.../resourceGroups/demo-rg]
+azurerm_resource_group.demo: Creation complete after 2s [id=/subscriptions/.../resourceGroups/demo-rg]
 azurerm_virtual_network.demo: Creating...
-azurerm_virtual_network.demo: Still creating... [10s elapsed]
-azurerm_virtual_network.demo: Creation complete after 13s [id=/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet]
+azurerm_virtual_network.demo: Creation complete after 6s [id=/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet]
 
 Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
 ```
@@ -273,79 +247,73 @@ If you now refresh the All Resources view in the console, you shoud see `demo-vn
 ### Modifying an Existing Resource
 
 When `terraform apply` runs it updates (or creates) the local state record to reflect what actions it carried out. In our case you'll see a
-file `terraform.tfstate` in your local directory, although Terraform can use different [backends](https://www.terraform.io/docs/backends/index.html)
+file `terraform.tfstate` in your local directory, although Terraform can use different
+[backends](https://developer.hashicorp.com/terraform/language/settings/backends/configuration)
 to share state between developers.
 
 To force an incremental change, click the Open Editor button in Cloud Shell then choose `clouddrive/demo/vars.tf`:
 
-![Open editor button](https://github.com/simonbrady/azure-terraform/raw/master/img/open_editor.png "Open editor button")
+![Open editor button](https://github.com/simonbrady/azure-terraform/blob/main/img/open_editor.png "Open editor button")
 
 Update the `default` value for `address_space`, e.g. to "10.2.0.0/16", then save your changes:
 
-![Save file](https://github.com/simonbrady/azure-terraform/raw/master/img/save.png "Save flle")
+![Save file](https://github.com/simonbrady/azure-terraform/blob/main/img/save.png "Save flle")
 
 Run `terraform plan` to confirm that your change will lead to an in-place update of the virtual
 network:
 
 ```
 PS /home/simon/clouddrive/azure-terraform/demo> terraform plan
-Refreshing Terraform state in-memory prior to plan...
-The refreshed state will be used to calculate this plan, but will not be
-persisted to local or remote state storage.
-
 azurerm_resource_group.demo: Refreshing state... [id=/subscriptions/.../resourceGroups/demo-rg]
 azurerm_virtual_network.demo: Refreshing state... [id=/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet]
 
-------------------------------------------------------------------------
-
-An execution plan has been generated and is shown below.
-Resource actions are indicated with the following symbols:
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
   ~ update in-place
 
 Terraform will perform the following actions:
 
   # azurerm_virtual_network.demo will be updated in-place
   ~ resource "azurerm_virtual_network" "demo" {
-      ~ address_space       = [
+      ~ address_space           = [
           - "10.1.0.0/16",
           + "10.2.0.0/16",
         ]
-        dns_servers         = []
-        id                  = "/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet"
-        location            = "australiaeast"
-        name                = "demo-vnet"
-        resource_group_name = "demo-rg"
-        tags                = {}
+        id                      = "/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet"
+        name                    = "demo-vnet"
+        tags                    = {}
+        # (6 unchanged attributes hidden)
     }
 
 Plan: 0 to add, 1 to change, 0 to destroy.
+
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform
+apply" now.
 ```
 
 Now run `terraform apply` to make the change:
 
 ```
-PS /home/simon/clouddrive/azure-terraform/demo> terraform apply
+S /home/simon/clouddrive/azure-terraform/demo> terraform apply
 azurerm_resource_group.demo: Refreshing state... [id=/subscriptions/.../resourceGroups/demo-rg]
 azurerm_virtual_network.demo: Refreshing state... [id=/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet]
 
-An execution plan has been generated and is shown below.
-Resource actions are indicated with the following symbols:
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
   ~ update in-place
 
 Terraform will perform the following actions:
 
   # azurerm_virtual_network.demo will be updated in-place
   ~ resource "azurerm_virtual_network" "demo" {
-      ~ address_space       = [
+      ~ address_space           = [
           - "10.1.0.0/16",
           + "10.2.0.0/16",
         ]
-        dns_servers         = []
-        id                  = "/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet"
-        location            = "australiaeast"
-        name                = "demo-vnet"
-        resource_group_name = "demo-rg"
-        tags                = {}
+        id                      = "/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet"
+        name                    = "demo-vnet"
+        tags                    = {}
+        # (6 unchanged attributes hidden)
     }
 
 Plan: 0 to add, 1 to change, 0 to destroy.
@@ -357,7 +325,8 @@ Do you want to perform these actions?
   Enter a value: yes
 
 azurerm_virtual_network.demo: Modifying... [id=/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet]
-azurerm_virtual_network.demo: Modifications complete after 2s [id=/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet]
+azurerm_virtual_network.demo: Still modifying... [id=/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet, 10s elapsed]
+azurerm_virtual_network.demo: Modifications complete after 11s [id=/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet]
 
 Apply complete! Resources: 0 added, 1 changed, 0 destroyed.
 ```
@@ -368,14 +337,14 @@ virtual network.
 ### Further Modifications
 
 Our virtual network configuration is the bare minimum necessary to deploy, but the
-[provider documentation](https://www.terraform.io/docs/providers/azurerm/r/virtual_network.html) lists lots of optional
-attributes we could also define. Some suggestions to get you started:
+[provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network.html)
+lists lots of optional attributes we could also define. Some suggestions to get you started:
 
-* Add some descriptive [tags](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-using-tags) to the resource.
-* Divide the address space into [subnets](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-vnet-plan-design-arm#segmentation)
+* Add some descriptive [tags](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/tag-resources) to the resource.
+* Divide the address space into [subnets](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-vnet-plan-design-arm#segmentation)
 (hint: rather than hard-coding subnet CIDR ranges that would have to change if you updated the address space, define Terraform
-[local values](https://www.terraform.io/docs/configuration/locals.html) using the
-[cidrsubnet](https://www.terraform.io/docs/configuration/functions/cidrsubnet.html) function).
+[local values](https://developer.hashicorp.com/terraform/language/values/locals) using the
+[cidrsubnet](https://developer.hashicorp.com/terraform/language/functions/cidrsubnet) function).
 
 ### Destroying Resources
 
@@ -386,8 +355,7 @@ PS /home/simon/clouddrive/azure-terraform/demo> terraform destroy
 azurerm_resource_group.demo: Refreshing state... [id=/subscriptions/.../resourceGroups/demo-rg]
 azurerm_virtual_network.demo: Refreshing state... [id=/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet]
 
-An execution plan has been generated and is shown below.
-Resource actions are indicated with the following symbols:
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
   - destroy
 
 Terraform will perform the following actions:
@@ -402,15 +370,18 @@ Terraform will perform the following actions:
 
   # azurerm_virtual_network.demo will be destroyed
   - resource "azurerm_virtual_network" "demo" {
-      - address_space       = [
+      - address_space           = [
           - "10.2.0.0/16",
         ] -> null
-      - dns_servers         = [] -> null
-      - id                  = "/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet" -> null
-      - location            = "australiaeast" -> null
-      - name                = "demo-vnet" -> null
-      - resource_group_name = "demo-rg" -> null
-      - tags                = {} -> null
+      - dns_servers             = [] -> null
+      - flow_timeout_in_minutes = 0 -> null
+      - guid                    = "63e23999-2b5a-4200-a846-1db9b66759ff" -> null
+      - id                      = "/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet" -> null
+      - location                = "australiaeast" -> null
+      - name                    = "demo-vnet" -> null
+      - resource_group_name     = "demo-rg" -> null
+      - subnet                  = [] -> null
+      - tags                    = {} -> null
     }
 
 Plan: 0 to add, 0 to change, 2 to destroy.
@@ -422,14 +393,11 @@ Do you really want to destroy all resources?
   Enter a value: yes
 
 azurerm_virtual_network.demo: Destroying... [id=/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet]
-azurerm_virtual_network.demo: Still destroying... [id=/subscriptions/fbf30969-c47f-4650-81d0-...soft.Network/virtualNetworks/demo-vnet,10s elapsed]
-azurerm_virtual_network.demo: Destruction complete after 12s
+azurerm_virtual_network.demo: Still destroying... [id=/subscriptions/.../resourceGroups/demo-rg/providers/Microsoft.Network/virtualNetworks/demo-vnet, 10s elapsed]
+azurerm_virtual_network.demo: Destruction complete after 11s
 azurerm_resource_group.demo: Destroying... [id=/subscriptions/.../resourceGroups/demo-rg]
 azurerm_resource_group.demo: Still destroying... [id=/subscriptions/.../resourceGroups/demo-rg, 10s elapsed]
-azurerm_resource_group.demo: Still destroying... [id=/subscriptions/.../resourceGroups/demo-rg, 20s elapsed]
-azurerm_resource_group.demo: Still destroying... [id=/subscriptions/.../resourceGroups/demo-rg, 30s elapsed]
-azurerm_resource_group.demo: Still destroying... [id=/subscriptions/.../resourceGroups/demo-rg, 40s elapsed]
-azurerm_resource_group.demo: Destruction complete after 48s
+azurerm_resource_group.demo: Destruction complete after 18s
 
 Destroy complete! Resources: 2 destroyed.
 ```
@@ -439,6 +407,6 @@ Cloud Shell created, you'll need to do it manually through the Azure console.
 
 ## Further Reading
 
-* [Introduction to Terraform](https://www.terraform.io/intro/index.html)
-* [Getting started with Terraform using the Azure provider](https://learn.hashicorp.com/terraform/?track=azure#azure)
-* [Terraform Cloud Shell development](https://docs.microsoft.com/en-us/azure/terraform/terraform-cloud-shell)
+* [Introduction to Terraform](https://developer.hashicorp.com/terraform/intro)
+* [Getting started with Terraform using the Azure provider](https://developer.hashicorp.com/terraform/tutorials/azure-get-started)
+* [Terraform on Azure documentation](https://learn.microsoft.com/en-us/azure/developer/terraform/)
